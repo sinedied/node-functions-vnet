@@ -1,0 +1,10 @@
+Hello world!
+
+Function API response:
+<div id="res"></div>
+
+<script>
+  const res = await fetch('/api/hello');
+  const data = await res.text();
+  document.getElementById('res').innerText = data;
+</script>
