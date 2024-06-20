@@ -29,8 +29,6 @@ param applicationInsightsDashboardName string = ''
 })
 param webappLocation string // Set in main.parameters.json
 
-param domainName string // Set in main.parameters.json
-
 // Id of the user or app to assign application roles
 param principalId string = ''
 
@@ -61,28 +59,28 @@ module webapp './core/host/staticwebapp.bicep' = {
   }
 }
 
-resource kv 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
-  scope: resourceGroup
-  name: keyvault.outputs.name
-}
+// resource kv 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
+//   scope: resourceGroup
+//   name: keyvault.outputs.name
+// }
 
-module api './app/api.bicep' = {
-  name: 'api'
-  scope: resourceGroup
-  params: {
-    name: '${abbrs.webSitesFunctions}api-${resourceToken}'
-    location: location
-    tags: union(tags, { 'azd-service-name': apiServiceName })
-    allowedOrigins: [webapp.outputs.uri]
-    // appServicePlanId: appServicePlan.outputs.id
-    storageAccountName: storage.outputs.name
-    applicationInsightsInstrumentationKey: monitoring.outputs.applicationInsightsInstrumentationKey
-    applicationInsightsConnectionString: monitoring.outputs.applicationInsightsConnectionString
-    CosmosDBConnectionString: ''//kv.getSecret(cosmosDb.outputs.connectionStringKey)
-    CosmosDBDatabaseName: cosmosDb.outputs.databaseName
-    // virtualNetworkSubnetId: vnet.outputs.appSubnetID
-  }
-}
+// module api './app/api.bicep' = {
+//   name: 'api'
+//   scope: resourceGroup
+//   params: {
+//     name: '${abbrs.webSitesFunctions}api-${resourceToken}'
+//     location: location
+//     tags: union(tags, { 'azd-service-name': apiServiceName })
+//     allowedOrigins: [webapp.outputs.uri]
+//     // appServicePlanId: appServicePlan.outputs.id
+//     storageAccountName: storage.outputs.name
+//     applicationInsightsInstrumentationKey: monitoring.outputs.applicationInsightsInstrumentationKey
+//     applicationInsightsConnectionString: monitoring.outputs.applicationInsightsConnectionString
+//     CosmosDBConnectionString: ''//kv.getSecret(cosmosDb.outputs.connectionStringKey)
+//     CosmosDBDatabaseName: cosmosDb.outputs.databaseName
+//     // virtualNetworkSubnetId: vnet.outputs.appSubnetID
+//   }
+// }
 
 // Link the Function App to the Static Web App
 // module linkedBackend './app/linked-backend.bicep' = {
@@ -96,28 +94,45 @@ module api './app/api.bicep' = {
 // }
 
 // Compute plan for the Azure Functions API
-// module appServicePlan './core/host/appserviceplan.bicep' = {
-//   name: 'appserviceplan'
-//   scope: resourceGroup
-//   params: {
-//     name: !empty(appServicePlanName) ? appServicePlanName : '${abbrs.webServerFarms}${resourceToken}'
-//     location: location
-//     tags: tags
-//     // sku: {
-//     //   name: 'Y1'
-//     //   tier: 'Dynamic'
-//     // }
-//     sku: {
-//       name: 'FC1'
-//       tier: 'FlexConsumption'
-//     }
-//     reserved: true
-//     // sku: {
-//     //   name: 'EP1'
-//     //   capacity: 1
-//     // }
-//   }
-// }
+module appServicePlan './core/host/appserviceplan.bicep' = {
+  name: 'appserviceplan'
+  scope: resourceGroup
+  params: {
+    name: !empty(appServicePlanName) ? appServicePlanName : '${abbrs.webServerFarms}${resourceToken}'
+    location: location
+    tags: union(tags, { 'azd-service-name': apiServiceName })
+    sku: {
+      name: 'FC1'
+      tier: 'FlexConsumption'
+    }
+    reserved: true
+  }
+}
+
+module api './core/host/functions-flexconsumption.bicep' = {
+  name: 'api'
+  scope: resourceGroup
+  params: {
+    name: '${abbrs.webSitesFunctions}api-${resourceToken}'
+    location: location
+    tags: tags
+    allowedOrigins: [webapp.outputs.uri]
+    runtimeName: 'node'
+    runtimeVersion: '20'
+    appServicePlanId: appServicePlan.outputs.id
+    storageAccountName: storageAccountName
+    // managedIdentity: true
+    // instanceMemoryMB: 2048
+    // maximumInstanceCount: 10
+    // virtualNetworkSubnetId: virtualNetworkSubnetId
+    appSettings: {
+      // APPINSIGHTS_INSTRUMENTATIONKEY: monitoring.outputs.applicationInsightsInstrumentationKey
+      // APPLICATIONINSIGHTS_CONNECTION_STRING: monitoring.outputs.applicationInsightsConnectionString
+      // CosmosDBConnectionString: CosmosDBConnectionString
+      // CosmosDBDatabaseName: cosmosDb.outputs.databaseName
+    }
+  }
+}
 
 module monitoring './core/monitor/monitoring.bicep' = {
   name: 'monitoring'
@@ -182,30 +197,20 @@ module keyvault './core/security/keyvault.bicep' = {
   }
 }
 
-// module domain './app/domain.bicep' = {
-//   name: 'domain'
-//   scope: resourceGroup
-//   params: {
-//     staticWebAppName: webapp.outputs.name
-//     domainName: domainName
-//     tags: tags
-//   }
-// }
-
 // Managed identity roles assignation
 // ---------------------------------------------------------------------------
 
 // User roles
-module storageContribRoleUser './core/security/role.bicep' = if (!isContinuousDeployment) {
-  scope: resourceGroup
-  name: 'storage-contrib-role-user'
-  params: {
-    principalId: principalId
-    // Storage Blob Data Owner
-    roleDefinitionId: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
-    principalType: 'User'
-  }
-}
+// module storageContribRoleUser './core/security/role.bicep' = if (!isContinuousDeployment) {
+//   scope: resourceGroup
+//   name: 'storage-contrib-role-user'
+//   params: {
+//     principalId: principalId
+//     // Storage Blob Data Owner
+//     roleDefinitionId: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
+//     principalType: 'User'
+//   }
+// }
 
 // module dbContribRoleUser './core/database/cosmos/sql/cosmos-sql-role-assign.bicep' = if (!isContinuousDeployment) {
 //   scope: resourceGroup
@@ -255,4 +260,4 @@ output AZURE_TENANT_ID string = tenant().tenantId
 output AZURE_RESOURCE_GROUP string = resourceGroup.name
 
 // output API_URL string = api.outputs.uri
-output WEBAPP_URL string = webapp.outputs.uri
+// output WEBAPP_URL string = webapp.outputs.uri
