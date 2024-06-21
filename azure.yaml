@@ -4,7 +4,7 @@ name: test-function-vnet
 
 services:
   webapp:
-    project: ./webapp
+    project: ./src/webapp
     dist: dist
     language: js
     host: staticwebapp
@@ -18,6 +18,6 @@ services:
           run: export API_URL && npm run build
 
   api:
-    project: ./api
+    project: ./src/api
     language: ts
     host: function
