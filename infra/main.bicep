@@ -125,6 +125,10 @@ module storage './core/storage/storage-account.bicep' = {
     location: location
     tags: tags
     allowBlobPublicAccess: false
+    containers: useVnet ? [
+      // Deployment storage container
+      { name: apiServiceName }
+    ] : []
   }
 }
 
