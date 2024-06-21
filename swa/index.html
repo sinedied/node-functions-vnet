@@ -1,10 +1,13 @@
 Hello world!
 
-Function API response:
-<div id="res"></div>
+<p>Function API response:</p>
+<p id="res"></p>
 
 <script>
-  const res = await fetch('/api/hello');
-  const data = await res.text();
-  document.getElementById('res').innerText = data;
+  async function callApi() {
+    const res = await fetch('/api/hello');
+    const data = await res.text();
+    document.getElementById('res').innerText = data;
+  }
+  callApi();
 </script>
