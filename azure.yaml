@@ -1,8 +1,15 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
 
-name: test-function-vnet
+name: node-functions-vnet
+metadata:
+  template: node-functions-vnet@1.0.0
 
 services:
+  api:
+    project: ./src/api
+    language: ts
+    host: function
+
   webapp:
     project: ./src/webapp
     dist: dist
@@ -16,8 +23,3 @@ services:
         posix:
           shell: sh
           run: export API_URL && npm run build
-
-  api:
-    project: ./src/api
-    language: ts
-    host: function
