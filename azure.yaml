@@ -5,6 +5,7 @@ name: test-function-vnet
 services:
   webapp:
     project: ./swa
+    dist: .
     language: js
     host: staticwebapp
 
