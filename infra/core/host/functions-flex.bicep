@@ -132,6 +132,7 @@ resource storageContainer 'Microsoft.Authorization/roleAssignments@2022-04-01' =
   }
 }
 
+output id string = functions.id
 output identityPrincipalId string = functions.identity.principalId
 output name string = functions.name
 output uri string = 'https://${functions.properties.defaultHostName}'

@@ -1,5 +1,5 @@
 # Infra missing
-- [ ] put storage in vnet
-- [ ] put APIM in front of the function
 - [ ] option for linked backend
-- [ ] link SWA backend to APIM
+
+## Issues
+- vnet: CORS not working (when not using linked backend)
