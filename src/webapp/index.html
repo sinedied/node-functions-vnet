@@ -3,14 +3,12 @@
   <head></head>
   <body>
     <p>Hello world from HTML!</p>
-    <div style="font-weight: bold">
-      <p>Function API response:</p>
-      <p id="result">Loading...</p>
-    </div>
+    <p>Function API response:</p>
+    <p id="result">Loading...</p>
     <script>
       async function callApi() {
         try {
-          const res = await fetch('__API_URL__/api/hello');
+          const res = await fetch('/api/hello');
           const text = await res.text();
           if (!res.ok) {
             throw new Error(text);
@@ -18,7 +16,7 @@
             document.getElementById('result').innerText = text;
           }
         } catch (error) {
-          document.getElementById('result').innerText = `<span style="color: red">Error calling API: ${error.message}<span>`;
+          document.getElementById('result').innerHTML = `<span style="color: red">Error calling API: ${error.message}<span>`;
         }
       }
       callApi();
