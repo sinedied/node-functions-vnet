@@ -65,21 +65,26 @@ module webapp './core/host/staticwebapp.bicep' = {
   }
 }
 
-// resource kv 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
-//   scope: resourceGroup
-//   name: keyvault.outputs.name
-// }
+resource kv 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
+  scope: resourceGroup
+  name: keyvault.outputs.name
+}
 
-// Link the Function App to the Static Web App
-// module linkedBackend './app/linked-backend.bicep' = {
-//   name: 'linkedbackend'
-//   scope: resourceGroup
-//   params: {
-//     staticWebAppName: webapp.outputs.name
-//     functionAppName: api.outputs.name
-//     functionAppLocation: location
-//   }
-// }
+module api './app/api.bicep' = {
+  name: 'api-module'
+  scope: resourceGroup
+  params: {
+    name: '${abbrs.webSitesFunctions}api-${resourceToken}'
+    location: location
+    tags: union(tags, { 'azd-service-name': apiServiceName })
+    appServicePlanId: appServicePlan.outputs.id
+    allowedOrigins: [webapp.outputs.uri]
+    storageAccountName: storage.outputs.name
+    applicationInsightsName: monitoring.outputs.applicationInsightsName
+    virtualNetworkSubnetId: useVnet ? vnet.outputs.appSubnetID : ''
+    cosmosDbConnectionString: kv.getSecret(cosmosDb.outputs.connectionStringKey)
+  }
+}
 
 // Compute plan for the Azure Functions API
 module appServicePlan './core/host/appserviceplan.bicep' = {
@@ -97,45 +102,6 @@ module appServicePlan './core/host/appserviceplan.bicep' = {
       tier: 'Dynamic'
     }
     reserved: useVnet ? true : null
-  }
-}
-
-module apiFlex './core/host/functions-flex.bicep' = if (useVnet) {
-  name: 'api-flex'
-  scope: resourceGroup
-  params: {
-    name: '${abbrs.webSitesFunctions}api-${resourceToken}'
-    location: location
-    tags: union(tags, { 'azd-service-name': apiServiceName })
-    allowedOrigins: [webapp.outputs.uri]
-    runtimeName: 'node'
-    runtimeVersion: '20'
-    appServicePlanId: appServicePlan.outputs.id
-    storageAccountName: storage.outputs.name
-    applicationInsightsName: monitoring.outputs.applicationInsightsName
-    virtualNetworkSubnetId: useVnet ? vnet.outputs.appSubnetID : ''
-    appSettings: {
-    }
-  }
-}
-
-module api './core/host/functions.bicep' = if (!useVnet) {
-  name: 'api'
-  scope: resourceGroup
-  params: {
-    name: '${abbrs.webSitesFunctions}api-${resourceToken}'
-    location: location
-    tags: union(tags, { 'azd-service-name': apiServiceName })
-    allowedOrigins: [webapp.outputs.uri]
-    runtimeName: 'node'
-    runtimeVersion: '20'
-    appServicePlanId: appServicePlan.outputs.id
-    storageAccountName: storage.outputs.name
-    applicationInsightsName: monitoring.outputs.applicationInsightsName
-    managedIdentity: true
-    alwaysOn: false
-    appSettings: {
-    }
   }
 }
 
@@ -234,7 +200,7 @@ module keyVaultAccessApi './core/security/keyvault-access.bicep' = {
   scope: resourceGroup
   params: {
     keyVaultName: keyvault.outputs.name
-    principalId: useVnet ? apiFlex.outputs.identityPrincipalId : api.outputs.identityPrincipalId
+    principalId: api.outputs.identityPrincipalId
   }
 }
 
@@ -242,7 +208,7 @@ module storageContribRoleApi './core/security/role.bicep' = {
   scope: resourceGroup
   name: 'storage-contrib-role-api'
   params: {
-    principalId: useVnet ? apiFlex.outputs.identityPrincipalId : api.outputs.identityPrincipalId
+    principalId: api.outputs.identityPrincipalId
     // Storage Blob Data Owner
     roleDefinitionId: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
     principalType: 'ServicePrincipal'
@@ -254,7 +220,7 @@ module dbContribRoleApi './core/database/cosmos/sql/cosmos-sql-role-assign.bicep
   name: 'db-contrib-role-api'
   params: {
     accountName: cosmosDb.outputs.accountName
-    principalId: useVnet ? apiFlex.outputs.identityPrincipalId : api.outputs.identityPrincipalId
+    principalId: api.outputs.identityPrincipalId
     // Cosmos DB Data Contributor
     roleDefinitionId: cosmosDb.outputs.roleDefinitionId //'00000000-0000-0000-0000-000000000002'
   }
@@ -264,5 +230,5 @@ output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
 output AZURE_RESOURCE_GROUP string = resourceGroup.name
 
-// output API_URL string = api.outputs.uri
+output API_URL string = api.outputs.uri
 output WEBAPP_URL string = webapp.outputs.uri
