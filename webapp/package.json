@@ -3,6 +3,6 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "rm -rf dist && mkdir dist && cp index.html dist/index.html && perl -pi -e 's/__API_URL__/'\"${API_URL}\"'/g' dist/index.html"
+    "build": "node build.js"
   }
 }
