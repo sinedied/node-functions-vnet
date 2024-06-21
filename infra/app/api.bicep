@@ -12,12 +12,12 @@ param virtualNetworkSubnetId string
 param applicationInsightsName string
 param allowedOrigins array
 param storageManagedIdentity bool
+param keyVaultName string
 
 @secure()
 param cosmosDbConnectionString string
 
 var useVnet = !empty(virtualNetworkSubnetId)
-
 
 module apiFlex '../core/host/functions-flex.bicep' = if (useVnet) {
   name: 'api-flex'
@@ -31,10 +31,12 @@ module apiFlex '../core/host/functions-flex.bicep' = if (useVnet) {
     runtimeVersion: '20'
     appServicePlanId: appServicePlanId
     storageAccountName: storageAccountName
+    keyVaultName: keyVaultName
     applicationInsightsName: applicationInsightsName
     virtualNetworkSubnetId: virtualNetworkSubnetId
     alwaysOn: false
     appSettings: {
+      COSMOSDB_CONNECTION_STRING: cosmosDbConnectionString
     }
   }
 }
@@ -51,6 +53,7 @@ module api '../core/host/functions.bicep' = if (!useVnet) {
     runtimeVersion: '20'
     appServicePlanId: appServicePlanId
     storageAccountName: storageAccountName
+    keyVaultName: keyVaultName
     applicationInsightsName: applicationInsightsName
     managedIdentity: true
     storageManagedIdentity: storageManagedIdentity
@@ -58,6 +61,7 @@ module api '../core/host/functions.bicep' = if (!useVnet) {
     // enableOryxBuild: !storageManagedIdentity
     alwaysOn: false
     appSettings: {
+      COSMOSDB_CONNECTION_STRING: cosmosDbConnectionString
     }
   }
 }
