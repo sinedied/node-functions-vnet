@@ -4,9 +4,9 @@
   "description": "",
   "scripts": {
     "build": "tsc",
+    "prebuild": "npm run clean",
     "watch": "tsc -w",
     "clean": "rimraf dist",
-    "prestart": "npm run clean && npm run build",
     "start": "func start",
     "test": "echo \"No tests yet...\""
   },
