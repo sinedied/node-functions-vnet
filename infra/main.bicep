@@ -43,6 +43,7 @@ var resourceToken = toLower(uniqueString(subscription().id, environmentName, loc
 var tags = {
   'azd-env-name': environmentName
 }
+var apiResourceName = '${abbrs.webSitesFunctions}api-${resourceToken}'
 
 // Organize resources in a resource group
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
@@ -75,7 +76,7 @@ module api './app/api.bicep' = {
   name: 'api-module'
   scope: resourceGroup
   params: {
-    name: '${abbrs.webSitesFunctions}api-${resourceToken}'
+    name: apiResourceName
     location: location
     tags: union(tags, { 'azd-service-name': apiServiceName })
     appServicePlanId: appServicePlan.outputs.id
@@ -132,7 +133,7 @@ module storage './core/storage/storage-account.bicep' = {
     allowBlobPublicAccess: false
     containers: useVnet ? [
       // Deployment storage container
-      { name: apiServiceName }
+      { name: apiResourceName }
     ] : []
   }
 }
@@ -213,17 +214,6 @@ module keyVaultAccessApi './core/security/keyvault-access.bicep' = {
   }
 }
 
-module storageContribRoleApi './core/security/role.bicep' = {
-  scope: resourceGroup
-  name: 'storage-contrib-role-api'
-  params: {
-    principalId: api.outputs.identityPrincipalId
-    // Storage Blob Data Owner
-    roleDefinitionId: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
-    principalType: 'ServicePrincipal'
-  }
-}
-
 module dbContribRoleApi './core/database/cosmos/sql/cosmos-sql-role-assign.bicep' = {
   scope: resourceGroup
   name: 'db-contrib-role-api'
@@ -241,3 +231,7 @@ output AZURE_RESOURCE_GROUP string = resourceGroup.name
 
 output API_URL string = api.outputs.uri
 output WEBAPP_URL string = webapp.outputs.uri
+
+// For deployment using Azure Functions Core Tools
+output AZURE_SUBSCRIPTION_ID string = subscription().subscriptionId
+output API_NAME string = api.outputs.name
