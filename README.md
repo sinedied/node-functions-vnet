@@ -9,6 +9,7 @@ A minimal test project using SWA + Azure Functions + CosmosDB to demonstrate opt
 ### Prerequisites
 - [Azure Account](https://azure.microsoft.com/en-us/free/) (sign up for free)
 - [Azure Developer CLI](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd?tabs=winget-windows%2Cbrew-mac%2Cscript-linux&pivots=os-windows)
+- [Azure Functions Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Cisolated-process%2Cnode-v4%2Cpython-v2%2Chttp-trigger%2Ccontainer-apps&pivots=programming-language-javascript#install-the-azure-functions-core-tools)
 
 Once you have the prerequisites, log in to your Azure account using the Azure Developer CLI:
 
