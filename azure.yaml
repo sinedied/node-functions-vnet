@@ -4,10 +4,18 @@ name: test-function-vnet
 
 services:
   webapp:
-    project: ./swa
-    dist: .
+    project: ./webapp
+    dist: dist
     language: js
     host: staticwebapp
+    hooks:
+      predeploy:
+        windows:
+          shell: pwsh
+          run: Export-ModuleMember -Variable API_URL && npm run build
+        posix:
+          shell: sh
+          run: export API_URL && npm run build
 
   api:
     project: ./api
