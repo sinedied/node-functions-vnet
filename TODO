@@ -1,0 +1,5 @@
+# Infra missing
+- [ ] function env vars
+- [ ] put storage in vnet
+- [ ] put APIM in front of the function
+- [ ] link SWA backend to APIM
