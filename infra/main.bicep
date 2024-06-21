@@ -36,6 +36,7 @@ param principalId string = ''
 param isContinuousDeployment bool // Set in main.parameters.json
 
 param useVnet bool // Set in main.parameters.json
+param useStorageManagedIdentity bool // Set in main.parameters.json
 
 var abbrs = loadJsonContent('abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
@@ -83,6 +84,7 @@ module api './app/api.bicep' = {
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     virtualNetworkSubnetId: useVnet ? vnet.outputs.appSubnetID : ''
     cosmosDbConnectionString: kv.getSecret(cosmosDb.outputs.connectionStringKey)
+    storageManagedIdentity: useStorageManagedIdentity
   }
 }
 

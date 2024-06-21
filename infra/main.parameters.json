@@ -20,6 +20,9 @@
     "useVnet": {
       "value": "${USE_VNET=false}"
     },
+    "useStorageManagedIdentity": {
+      "value": "${USE_STORAGE_MANAGED_IDENTITY=false}"
+    },
     "isContinuousDeployment": {
       "value": "${CI=false}"
     }

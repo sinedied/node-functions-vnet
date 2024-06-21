@@ -11,6 +11,7 @@ param storageAccountName string
 param virtualNetworkSubnetId string
 param applicationInsightsName string
 param allowedOrigins array
+param storageManagedIdentity bool
 
 @secure()
 param cosmosDbConnectionString string
@@ -51,7 +52,7 @@ module api '../core/host/functions.bicep' = if (!useVnet) {
     storageAccountName: storageAccountName
     applicationInsightsName: applicationInsightsName
     managedIdentity: true
-    storageManagedIdentity: true
+    storageManagedIdentity: storageManagedIdentity
     alwaysOn: false
     appSettings: {
     }
