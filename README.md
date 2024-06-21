@@ -14,13 +14,15 @@ azd up
 
 ```bash
 azd env set USE_STORAGE_MANAGED_IDENTITY true
+azd up
 ```
 
-### Deploy with VNet:
+### Deploy with VNet + storage managed identity:
 
 > [!WARNING]
 > This will use the new [Azure Functions Flex Consumption plan](https://learn.microsoft.com/en-us/azure/azure-functions/flex-consumption-plan), which is currently in preview. Only a few regions are supported for now, so you should use `eastus` for the `location` parameter.
 
 ```bash
 azd env set USE_VNET true
+azd up
 ```
