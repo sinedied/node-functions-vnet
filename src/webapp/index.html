@@ -10,11 +10,15 @@
     <script>
       async function callApi() {
         const res = await fetch('__API_URL__/api/hello');
-        const text = await res.text();
-        if (!res.ok) {
-          document.getElementById('result').innerText = `<span style="color: red">Error calling API: ${text}<span>`;
-        } else {
-          document.getElementById('result').innerText = text;
+        try {
+          const text = await res.text();
+          if (!res.ok) {
+            throw new Error(text);
+          } else {
+            document.getElementById('result').innerText = text;
+          }
+        } catch (error) {
+          document.getElementById('result').innerText = `<span style="color: red">Error calling API: ${error.message}<span>`;
         }
       }
       callApi();
