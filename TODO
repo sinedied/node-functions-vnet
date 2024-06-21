@@ -1,5 +1,4 @@
 # Infra missing
-- [ ] function env vars
 - [ ] put storage in vnet
 - [ ] put APIM in front of the function
 - [ ] option for linked backend

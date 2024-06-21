@@ -82,6 +82,7 @@ module api './app/api.bicep' = {
     allowedOrigins: [webapp.outputs.uri]
     storageAccountName: storage.outputs.name
     keyVaultName: keyvault.outputs.name
+    applicationInsightsInstrumentationKey: monitoring.outputs.applicationInsightsInstrumentationKey
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     virtualNetworkSubnetId: useVnet ? vnet.outputs.appSubnetID : ''
     cosmosDbConnectionString: kv.getSecret(cosmosDb.outputs.connectionStringKey)

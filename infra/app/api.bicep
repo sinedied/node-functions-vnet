@@ -10,6 +10,7 @@ param appServicePlanId string
 param storageAccountName string
 param virtualNetworkSubnetId string
 param applicationInsightsName string
+param applicationInsightsInstrumentationKey string
 param allowedOrigins array
 param storageManagedIdentity bool
 param keyVaultName string
@@ -37,6 +38,7 @@ module apiFlex '../core/host/functions-flex.bicep' = if (useVnet) {
     alwaysOn: false
     appSettings: {
       COSMOSDB_CONNECTION_STRING: cosmosDbConnectionString
+      APPINSIGHTS_INSTRUMENTATIONKEY: applicationInsightsInstrumentationKey
     }
   }
 }
