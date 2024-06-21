@@ -5,13 +5,17 @@
     Hello world from HTML!
 
     <p>Function API response:</p>
-    <p id="result"></p>
+    <p id="result">Loading...</p>
 
     <script>
       async function callApi() {
         const res = await fetch('__API_URL__/api/hello');
-        const data = await res.text();
-        document.getElementById('result').innerText = data;
+        const text = await res.text();
+        if (!res.ok) {
+          document.getElementById('result').innerText = `<span style="color: red">Error calling API: ${text}<span>`;
+        } else {
+          document.getElementById('result').innerText = text;
+        }
       }
       callApi();
     </script>    
