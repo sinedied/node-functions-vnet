@@ -30,7 +30,7 @@ resource stg 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
 }
 
 resource functions 'Microsoft.Web/sites@2023-12-01' = {
-  name: '${name}-functions'
+  name: name
   location: location
   tags: tags
   kind: kind
@@ -64,7 +64,7 @@ resource functions 'Microsoft.Web/sites@2023-12-01' = {
         allowedOrigins: union([ 'https://portal.azure.com', 'https://ms.portal.azure.com' ], allowedOrigins)
       }
     }
-    virtualNetworkSubnetId: virtualNetworkSubnetId
+    virtualNetworkSubnetId: !empty(virtualNetworkSubnetId) ? virtualNetworkSubnetId : null
   }
 
   resource configAppSettings 'config' = {
