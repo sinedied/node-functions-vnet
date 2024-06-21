@@ -26,7 +26,8 @@ azd up
 
 ```bash
 azd env set USE_STORAGE_MANAGED_IDENTITY true
-azd up
+azd provision
+./deploy.sh
 ```
 
 ### Deploy with VNet + storage managed identity:
@@ -36,5 +37,6 @@ azd up
 
 ```bash
 azd env set USE_VNET true
-azd up
+azd provision
+./deploy.sh
 ```
