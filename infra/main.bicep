@@ -135,6 +135,19 @@ module storage './core/storage/storage-account.bicep' = {
       // Deployment storage container
       { name: apiResourceName }
     ] : []
+    networkAcls: useVnet ? {
+      defaultAction: 'Deny'
+      bypass: 'AzureServices'
+      virtualNetworkRules: [
+        {
+          id: vnet.outputs.appSubnetID
+          action: 'Allow'
+        }
+      ]
+    } : {
+      bypass: 'AzureServices'
+      defaultAction: 'Allow'
+    }
   }
 }
 
