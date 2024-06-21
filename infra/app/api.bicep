@@ -14,6 +14,7 @@ param applicationInsightsInstrumentationKey string
 param allowedOrigins array
 param storageManagedIdentity bool
 param keyVaultName string
+param apimServiceName string = ''
 
 @secure()
 param cosmosDbConnectionString string
@@ -65,6 +66,17 @@ module api '../core/host/functions.bicep' = if (!useVnet) {
     appSettings: {
       COSMOSDB_CONNECTION_STRING: cosmosDbConnectionString
     }
+  }
+}
+
+module apim '../core/gateway/apim.bicep' = if (useVnet) {
+  name: 'apim'
+  scope: resourceGroup()
+  params: {
+    name: apimServiceName
+    location: location
+    tags: tags
+    applicationInsightsName: applicationInsightsName
   }
 }
 
