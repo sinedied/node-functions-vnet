@@ -35,6 +35,8 @@ param principalId string = ''
 // Differentiates between automated and manual deployments
 param isContinuousDeployment bool // Set in main.parameters.json
 
+param useVnet bool // Set in main.parameters.json
+
 var abbrs = loadJsonContent('abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 var tags = {
@@ -56,30 +58,16 @@ module webapp './core/host/staticwebapp.bicep' = {
     name: !empty(webappName) ? webappName : '${abbrs.webStaticSites}web-${resourceToken}'
     location: webappLocation
     tags: union(tags, { 'azd-service-name': webappName })
+    sku: {
+      name: 'Standard'
+      tier: 'Standard'
+    }
   }
 }
 
 // resource kv 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
 //   scope: resourceGroup
 //   name: keyvault.outputs.name
-// }
-
-// module api './app/api.bicep' = {
-//   name: 'api'
-//   scope: resourceGroup
-//   params: {
-//     name: '${abbrs.webSitesFunctions}api-${resourceToken}'
-//     location: location
-//     tags: union(tags, { 'azd-service-name': apiServiceName })
-//     allowedOrigins: [webapp.outputs.uri]
-//     // appServicePlanId: appServicePlan.outputs.id
-//     storageAccountName: storage.outputs.name
-//     applicationInsightsInstrumentationKey: monitoring.outputs.applicationInsightsInstrumentationKey
-//     applicationInsightsConnectionString: monitoring.outputs.applicationInsightsConnectionString
-//     CosmosDBConnectionString: ''//kv.getSecret(cosmosDb.outputs.connectionStringKey)
-//     CosmosDBDatabaseName: cosmosDb.outputs.databaseName
-//     // virtualNetworkSubnetId: vnet.outputs.appSubnetID
-//   }
 // }
 
 // Link the Function App to the Static Web App
@@ -100,36 +88,53 @@ module appServicePlan './core/host/appserviceplan.bicep' = {
   params: {
     name: !empty(appServicePlanName) ? appServicePlanName : '${abbrs.webServerFarms}${resourceToken}'
     location: location
-    tags: union(tags, { 'azd-service-name': apiServiceName })
-    sku: {
+    tags: tags
+    sku: useVnet ? {
       name: 'FC1'
       tier: 'FlexConsumption'
+    } : {
+      name: 'Y1'
+      tier: 'Dynamic'
     }
-    reserved: true
+    reserved: useVnet ? true : null
   }
 }
 
-module api './core/host/functions-flexconsumption.bicep' = {
+module apiFlex './core/host/functions-flex.bicep' = if (useVnet) {
+  name: 'api-flex'
+  scope: resourceGroup
+  params: {
+    name: '${abbrs.webSitesFunctions}api-${resourceToken}'
+    location: location
+    tags: union(tags, { 'azd-service-name': apiServiceName })
+    allowedOrigins: [webapp.outputs.uri]
+    runtimeName: 'node'
+    runtimeVersion: '20'
+    appServicePlanId: appServicePlan.outputs.id
+    storageAccountName: storage.outputs.name
+    applicationInsightsName: monitoring.outputs.applicationInsightsName
+    virtualNetworkSubnetId: useVnet ? vnet.outputs.appSubnetID : ''
+    appSettings: {
+    }
+  }
+}
+
+module api './core/host/functions.bicep' = if (!useVnet) {
   name: 'api'
   scope: resourceGroup
   params: {
     name: '${abbrs.webSitesFunctions}api-${resourceToken}'
     location: location
-    tags: tags
+    tags: union(tags, { 'azd-service-name': apiServiceName })
     allowedOrigins: [webapp.outputs.uri]
     runtimeName: 'node'
     runtimeVersion: '20'
     appServicePlanId: appServicePlan.outputs.id
-    storageAccountName: storageAccountName
-    // managedIdentity: true
-    // instanceMemoryMB: 2048
-    // maximumInstanceCount: 10
-    // virtualNetworkSubnetId: virtualNetworkSubnetId
+    storageAccountName: storage.outputs.name
+    applicationInsightsName: monitoring.outputs.applicationInsightsName
+    managedIdentity: true
+    alwaysOn: false
     appSettings: {
-      // APPINSIGHTS_INSTRUMENTATIONKEY: monitoring.outputs.applicationInsightsInstrumentationKey
-      // APPLICATIONINSIGHTS_CONNECTION_STRING: monitoring.outputs.applicationInsightsConnectionString
-      // CosmosDBConnectionString: CosmosDBConnectionString
-      // CosmosDBDatabaseName: cosmosDb.outputs.databaseName
     }
   }
 }
@@ -176,7 +181,7 @@ module cosmosDb './core/database/cosmos/sql/cosmos-sql-db.bicep' = {
   }
 }
 
-module vnet './app/vnet.bicep' = {
+module vnet './app/vnet.bicep' = if (useVnet) {
   name: 'vnet'
   scope: resourceGroup
   params: {
@@ -201,63 +206,63 @@ module keyvault './core/security/keyvault.bicep' = {
 // ---------------------------------------------------------------------------
 
 // User roles
-// module storageContribRoleUser './core/security/role.bicep' = if (!isContinuousDeployment) {
-//   scope: resourceGroup
-//   name: 'storage-contrib-role-user'
-//   params: {
-//     principalId: principalId
-//     // Storage Blob Data Owner
-//     roleDefinitionId: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
-//     principalType: 'User'
-//   }
-// }
+module storageContribRoleUser './core/security/role.bicep' = if (!isContinuousDeployment) {
+  scope: resourceGroup
+  name: 'storage-contrib-role-user'
+  params: {
+    principalId: principalId
+    // Storage Blob Data Owner
+    roleDefinitionId: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
+    principalType: 'User'
+  }
+}
 
-// module dbContribRoleUser './core/database/cosmos/sql/cosmos-sql-role-assign.bicep' = if (!isContinuousDeployment) {
-//   scope: resourceGroup
-//   name: 'db-contrib-role-user'
-//   params: {
-//     accountName: cosmosDb.outputs.accountName
-//     principalId: principalId
-//     // Cosmos DB Data Contributor
-//     roleDefinitionId: cosmosDb.outputs.roleDefinitionId //'00000000-0000-0000-0000-000000000002'
-//   }
-// }
+module dbContribRoleUser './core/database/cosmos/sql/cosmos-sql-role-assign.bicep' = if (!isContinuousDeployment) {
+  scope: resourceGroup
+  name: 'db-contrib-role-user'
+  params: {
+    accountName: cosmosDb.outputs.accountName
+    principalId: principalId
+    // Cosmos DB Data Contributor
+    roleDefinitionId: cosmosDb.outputs.roleDefinitionId //'00000000-0000-0000-0000-000000000002'
+  }
+}
 
 // System roles
-// module keyVaultAccessApi './core/security/keyvault-access.bicep' = {
-//   name: 'keyvault-access-api'
-//   scope: resourceGroup
-//   params: {
-//     keyVaultName: keyvault.outputs.name
-//     principalId: api.outputs.identityPrincipalId
-//   }
-// }
+module keyVaultAccessApi './core/security/keyvault-access.bicep' = {
+  name: 'keyvault-access-api'
+  scope: resourceGroup
+  params: {
+    keyVaultName: keyvault.outputs.name
+    principalId: useVnet ? apiFlex.outputs.identityPrincipalId : api.outputs.identityPrincipalId
+  }
+}
 
-// module storageContribRoleApi './core/security/role.bicep' = {
-//   scope: resourceGroup
-//   name: 'storage-contrib-role-api'
-//   params: {
-//     principalId: api.outputs.identityPrincipalId
-//     // Storage Blob Data Owner
-//     roleDefinitionId: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
-//     principalType: 'ServicePrincipal'
-//   }
-// }
+module storageContribRoleApi './core/security/role.bicep' = {
+  scope: resourceGroup
+  name: 'storage-contrib-role-api'
+  params: {
+    principalId: useVnet ? apiFlex.outputs.identityPrincipalId : api.outputs.identityPrincipalId
+    // Storage Blob Data Owner
+    roleDefinitionId: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
+    principalType: 'ServicePrincipal'
+  }
+}
 
-// module dbContribRoleApi './core/database/cosmos/sql/cosmos-sql-role-assign.bicep' = {
-//   scope: resourceGroup
-//   name: 'db-contrib-role-api'
-//   params: {
-//     accountName: cosmosDb.outputs.accountName
-//     principalId: api.outputs.identityPrincipalId
-//     // Cosmos DB Data Contributor
-//     roleDefinitionId: cosmosDb.outputs.roleDefinitionId //'00000000-0000-0000-0000-000000000002'
-//   }
-// }
+module dbContribRoleApi './core/database/cosmos/sql/cosmos-sql-role-assign.bicep' = {
+  scope: resourceGroup
+  name: 'db-contrib-role-api'
+  params: {
+    accountName: cosmosDb.outputs.accountName
+    principalId: useVnet ? apiFlex.outputs.identityPrincipalId : api.outputs.identityPrincipalId
+    // Cosmos DB Data Contributor
+    roleDefinitionId: cosmosDb.outputs.roleDefinitionId //'00000000-0000-0000-0000-000000000002'
+  }
+}
 
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
 output AZURE_RESOURCE_GROUP string = resourceGroup.name
 
 // output API_URL string = api.outputs.uri
-// output WEBAPP_URL string = webapp.outputs.uri
+output WEBAPP_URL string = webapp.outputs.uri

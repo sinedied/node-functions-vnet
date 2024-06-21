@@ -17,8 +17,8 @@
     "principalId": {
       "value": "${AZURE_PRINCIPAL_ID}"
     },
-    "domainName": {
-      "value": "${DOMAIN_NAME}=azcheck.in"
+    "useVnet": {
+      "value": "${USE_VNET=false}"
     },
     "isContinuousDeployment": {
       "value": "${CI=false}"
