@@ -9,8 +9,8 @@
     </p>
     <script>
       async function callApi() {
-        const res = await fetch('__API_URL__/api/hello');
         try {
+          const res = await fetch('__API_URL__/api/hello');
           const text = await res.text();
           if (!res.ok) {
             throw new Error(text);
