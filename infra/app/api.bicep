@@ -14,12 +14,13 @@ param applicationInsightsInstrumentationKey string
 param allowedOrigins array
 param storageManagedIdentity bool
 param keyVaultName string
-param apimServiceName string = ''
+param staticWebAppName string = ''
 
 @secure()
 param cosmosDbConnectionString string
 
 var useVnet = !empty(virtualNetworkSubnetId)
+var finalApi = useVnet ? apiFlex : api
 
 module apiFlex '../core/host/functions-flex.bicep' = if (useVnet) {
   name: 'api-flex'
@@ -69,28 +70,17 @@ module api '../core/host/functions.bicep' = if (!useVnet) {
   }
 }
 
-module apim '../core/gateway/apim.bicep' = if (useVnet) {
-  name: 'apim'
+// Link the Function App to the Static Web App
+module linkedBackend './linked-backend.bicep' = if (!empty(staticWebAppName)) {
+  name: 'linkedbackend'
   scope: resourceGroup()
   params: {
-    name: apimServiceName
-    location: location
-    tags: tags
-    applicationInsightsName: applicationInsightsName
+    staticWebAppName: staticWebAppName
+    backendResourceId: finalApi.outputs.id
+    backendLocation: location
   }
 }
 
-// Link the Function App to the Static Web App
-// module linkedBackend './app/linked-backend.bicep' = {
-//   name: 'linkedbackend'
-//   scope: resourceGroup
-//   params: {
-//     staticWebAppName: webapp.outputs.name
-//     functionAppName: api.outputs.name
-//     functionAppLocation: location
-//   }
-// }
-
-output identityPrincipalId string = useVnet ? apiFlex.outputs.identityPrincipalId : api.outputs.identityPrincipalId
-output name string = useVnet ? apiFlex.outputs.name : api.outputs.name
-output uri string = useVnet ? apiFlex.outputs.uri : api.outputs.uri
+output identityPrincipalId string = finalApi.outputs.identityPrincipalId
+output name string = finalApi.outputs.name
+output uri string = finalApi.outputs.uri
