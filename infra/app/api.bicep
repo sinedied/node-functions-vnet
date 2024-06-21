@@ -33,6 +33,7 @@ module apiFlex '../core/host/functions-flex.bicep' = if (useVnet) {
     storageAccountName: storageAccountName
     applicationInsightsName: applicationInsightsName
     virtualNetworkSubnetId: virtualNetworkSubnetId
+    alwaysOn: false
     appSettings: {
     }
   }
@@ -53,6 +54,8 @@ module api '../core/host/functions.bicep' = if (!useVnet) {
     applicationInsightsName: applicationInsightsName
     managedIdentity: true
     storageManagedIdentity: storageManagedIdentity
+    // scmDoBuildDuringDeployment: !storageManagedIdentity
+    // enableOryxBuild: !storageManagedIdentity
     alwaysOn: false
     appSettings: {
     }
