@@ -28,8 +28,11 @@ azd up
 ```bash
 azd env set USE_STORAGE_MANAGED_IDENTITY true
 azd provision
-./deploy.sh
 ```
+
+> [!CAUTION]
+> Deployment of Function app with storage managed identity does not work using any CLI tool at the moment.
+> You need to deploy it manually following [this guide](https://learn.microsoft.com/en-us/azure/azure-functions/run-functions-from-deployment-package#using-website_run_from_package--url).
 
 ### Deploy with VNet + storage managed identity:
 
@@ -41,3 +44,8 @@ azd env set USE_VNET true
 azd provision
 ./deploy.sh
 ```
+
+<!--
+> [!TIP]
+> If you install the [Azure Developer CLI daily build](https://github.com/Azure/azure-dev/blob/main/cli/installer/README.md#download-from-daily-builds), you can use `azd up` to provision and deploy in one command.
+-->
