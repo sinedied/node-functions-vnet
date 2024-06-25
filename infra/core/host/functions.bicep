@@ -85,8 +85,8 @@ module storageOwnerRole '../../core/security/role.bicep' = if (storageManagedIde
   name: 'search-index-contrib-role-api'
   params: {
     principalId: functions.outputs.identityPrincipalId
-    // Search Index Data Contributor
-    roleDefinitionId: '8ebe5a00-799e-43f5-93ac-243d3dce84a7'
+    // Storage Blob Data Contributor
+    roleDefinitionId: 'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
     principalType: 'ServicePrincipal'
   }
 }
