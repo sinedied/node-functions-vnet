@@ -61,8 +61,8 @@ module api '../core/host/functions.bicep' = if (!useVnet) {
     applicationInsightsName: applicationInsightsName
     managedIdentity: true
     storageManagedIdentity: storageManagedIdentity
-    // scmDoBuildDuringDeployment: !storageManagedIdentity
-    // enableOryxBuild: !storageManagedIdentity
+    scmDoBuildDuringDeployment: !storageManagedIdentity
+    enableOryxBuild: !storageManagedIdentity
     alwaysOn: false
     appSettings: {
       COSMOSDB_CONNECTION_STRING: cosmosDbConnectionString
