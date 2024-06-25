@@ -7,9 +7,9 @@ if azd_env=$(azd env get-values); then
   export $(echo "$azd_env" | xargs)
 fi
 
-# Deploy webapp
-azd deploy webapp
-
 # Deploy api
 cd src/api
 func azure functionapp publish "${API_NAME}" --subscription "${AZURE_SUBSCRIPTION_ID}"
+
+# Deploy webapp
+azd deploy webapp
