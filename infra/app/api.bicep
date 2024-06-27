@@ -39,8 +39,8 @@ module apiFlex '../core/host/functions-flex.bicep' = if (useVnet) {
     virtualNetworkSubnetId: virtualNetworkSubnetId
     alwaysOn: false
     appSettings: {
-      COSMOSDB_CONNECTION_STRING: cosmosDbConnectionString
       APPINSIGHTS_INSTRUMENTATIONKEY: applicationInsightsInstrumentationKey
+      COSMOSDB_CONNECTION_STRING: cosmosDbConnectionString
     }
   }
 }
@@ -65,6 +65,7 @@ module api '../core/host/functions.bicep' = if (!useVnet) {
     enableOryxBuild: !storageManagedIdentity
     alwaysOn: false
     appSettings: {
+      APPINSIGHTS_INSTRUMENTATIONKEY: applicationInsightsInstrumentationKey
       COSMOSDB_CONNECTION_STRING: cosmosDbConnectionString
     }
   }
