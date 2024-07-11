@@ -41,11 +41,5 @@ azd provision
 
 ```bash
 azd env set USE_VNET true
-azd provision
-./deploy.sh
+azd up
 ```
-
-<!--
-> [!TIP]
-> If you install the [Azure Developer CLI daily build](https://github.com/Azure/azure-dev/blob/main/cli/installer/README.md#download-from-daily-builds), you can use `azd up` to provision and deploy in one command.
--->
