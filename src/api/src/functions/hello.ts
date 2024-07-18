@@ -16,7 +16,7 @@ export async function hello(request: HttpRequest, context: InvocationContext): P
     
         const { database } = await client.databases.createIfNotExists({ id: 'testdb' });
         const { container } = await database.containers.createIfNotExists({ id: 'testcontainer' });
-        const { resource } = await container.items.upsert({ id: '0', message: 'Hello world from CosmosDB' });
+        const { resource } = await container.items.upsert({ id: '0', message: 'Hello world from CosmosDB!' });
     
         response += `<br>${resource.message}`;
     } catch (error) {

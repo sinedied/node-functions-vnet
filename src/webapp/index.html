@@ -13,7 +13,7 @@
           if (!res.ok) {
             throw new Error(text);
           } else {
-            document.getElementById('result').innerText = text;
+            document.getElementById('result').innerHTML = text;
           }
         } catch (error) {
           document.getElementById('result').innerHTML = `<span style="color: red">Error calling API: ${error.message}<span>`;
