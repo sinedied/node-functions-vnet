@@ -162,12 +162,12 @@ module cosmosDb './core/database/cosmos/sql/cosmos-sql-db.bicep' = {
     tags: tags
     containers: [
       {
-        name: 'events'
-        id: 'events'
+        name: 'testcontainer'
+        id: 'testcontainer'
         partitionKey: '/id'
       }
     ]
-    databaseName: 'events'
+    databaseName: 'testdb'
     keyVaultName: keyvault.outputs.name
     disableLocalAuth: false
   }
