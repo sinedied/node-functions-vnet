@@ -4,8 +4,7 @@
   <body>
     <p>Hello world from HTML!</p>
     <p>Function API response:</p>
-    <p id="apiResult">Loading...</p>
-    <p id="dbResult">Loading...</p>
+    <p id="result">Loading...</p>
     <script>
       async function callApi() {
         try {
@@ -14,30 +13,13 @@
           if (!res.ok) {
             throw new Error(text);
           } else {
-            document.getElementById('apiResult').innerText = text;
+            document.getElementById('result').innerText = text;
           }
         } catch (error) {
-          document.getElementById('apiResult').innerHTML = `<span style="color: red">Error calling API: ${error.message}<span>`;
-        }
-      }
-      async function callApiDb() {
-        try {
-          const res = await fetch('/api/db');
-          const text = await res.text();
-          if (!res.ok) {
-            throw new Error(text);
-          } else {
-            document.getElementById('dbResult').innerText = text;
-          }
-        } catch (error) {
-          document.getElementById('dbResult').innerHTML = `<span style="color: red">Error calling API: ${error.message}<span>`;
+          document.getElementById('result').innerHTML = `<span style="color: red">Error calling API: ${error.message}<span>`;
         }
       }
       callApi();
-      callApiDb();
     </script>    
   </body>
 </html>
-
-
-
