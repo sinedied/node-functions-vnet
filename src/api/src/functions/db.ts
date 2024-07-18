@@ -13,10 +13,10 @@ export async function db(request: HttpRequest, context: InvocationContext): Prom
     
         const { database } = await client.databases.createIfNotExists({ id: 'testdb' });
         const { container } = await database.containers.createIfNotExists({ id: 'testcontainer' });
-        const { resource } = await container.items.create({ message: 'Hello from CosmosDB' });
-        const { resource: body } = await container.item(resource.id).read();
+        const { resource: created } = await container.items.create({ message: 'Hello from CosmosDB' });
+        const { resource } = await container.item(created.id).read();
     
-        return { body };
+        return { body: JSON.stringify(resource) };
     } catch (error) {
         context.error(error);
         return { status: 500, body: `Internal Server Error: ${error.toString()}` };
