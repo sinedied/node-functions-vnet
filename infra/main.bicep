@@ -87,6 +87,7 @@ module api './app/api.bicep' = {
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     virtualNetworkSubnetId: useVnet ? vnet.outputs.appSubnetID : ''
     cosmosDbConnectionString: kv.getSecret(cosmosDb.outputs.connectionStringKey)
+    cosmosDbEndpoint: cosmosDb.outputs.endpoint
     storageManagedIdentity: useStorageManagedIdentity
     staticWebAppName: webapp.outputs.name
   }
@@ -168,6 +169,7 @@ module cosmosDb './core/database/cosmos/sql/cosmos-sql-db.bicep' = {
     ]
     databaseName: 'events'
     keyVaultName: keyvault.outputs.name
+    disableLocalAuth: false
   }
 }
 
@@ -243,6 +245,7 @@ output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
 output AZURE_RESOURCE_GROUP string = resourceGroup.name
 
+output COSMOSDB_ENDPOINT string = cosmosDb.outputs.endpoint
 output API_URL string = api.outputs.uri
 output WEBAPP_URL string = webapp.outputs.uri
 
