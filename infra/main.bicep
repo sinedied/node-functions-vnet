@@ -169,7 +169,7 @@ module cosmosDb './core/database/cosmos/sql/cosmos-sql-db.bicep' = {
     ]
     databaseName: 'testdb'
     keyVaultName: keyvault.outputs.name
-    disableLocalAuth: false
+    disableLocalAuth: true
   }
 }
 
